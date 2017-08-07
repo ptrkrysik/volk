@@ -1,36 +1,41 @@
 /* -*- c++ -*- */
 /*
- */
+  Copyright (C) 2017 Free Software Foundation, Inc.
+
+  This file is pat of libVOLK
+
+  All rights reserved.
+
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU Lesser General Public License version 2.1, as
+  published by the Free Software Foundation.  This program is
+  distributed in the hope that it will be useful, but WITHOUT ANY
+  WARRANTY; without even the implied warranty of MERCHANTABILITY or
+  FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public
+  License for more details.
+
+  You should have received a copy of the GNU Lesser General Public License
+  along with this program; if not, see <http://www.gnu.org/licenses/>.
+*/
 
 /*!
  * \page volk_32f_s32f_s32f_mod_range_32f
  *
- * \b Overview
- *
- * Performs FM-detect differentiation on the input vector and stores
- * the results in the output vector.
+ * \b wraps floating point numbers to stay within a defined [min,max] range
  *
  * <b>Dispatcher Prototype</b>
  * \code
- * void volk_32f_s32f_s32f_mod_range_32f(float* outputVector, const float* inputVector, const float bound, float* saveValue, unsigned int num_points)
+ * void volk_32f_s32f_s32f_mod_range_32f(float* outputVector, const float* inputVector, const float lower_bound, const float upper_bound, unsigned int num_points)
  * \endcode
  *
  * \b Inputs
- * \li inputVector: The input vector containing phase data (must be on the interval (-bound, bound]).
- * \li bound: The interval that the input phase data is in, which is used to modulo the differentiation.
- * \li saveValue: A pointer to a float which contains the phase value of the sample before the first input sample.
+ * \li inputVector: The input vector
+ * \li lower_bound: The lower output boundary
+ * \li upper_bound: The upper output boundary
  * \li num_points The number of data points.
  *
  * \b Outputs
  * \li outputVector: The vector where the results will be stored.
- *
- * \b Example
- * \code
- * int N = 10000;
- *
- * <FIXME>
- *
- * volk_32f_s32f_s32f_mod_range_32f();
  *
  * \endcode
  */
