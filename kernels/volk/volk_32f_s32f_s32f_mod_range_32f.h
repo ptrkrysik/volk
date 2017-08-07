@@ -57,7 +57,7 @@ static inline void volk_32f_s32f_s32f_mod_range_32f_u_avx(float* outputVector, c
     input = _mm256_loadu_ps(inPtr);
     // calculate mask: input < lower, input > upper
     is_smaller = _mm256_cmp_ps(input, lower, 0x11); //0x11: Less than, ordered, non-signalling
-    is_smaller = _mm256_cmp_ps(input, upper, 0x1e); //0x1e: greater than, ordered, non-signalling
+    is_bigger = _mm256_cmp_ps(input, upper, 0x1e); //0x1e: greater than, ordered, non-signalling
     // find out how far we are out-of-bound – positive values!
     excess = _mm256_and_ps(_mm256_sub_ps(lower, input), is_smaller);
     excess = _mm256_or_ps(_mm256_and_ps(_mm256_sub_ps(input, upper), is_bigger), excess);
@@ -72,9 +72,63 @@ static inline void volk_32f_s32f_s32f_mod_range_32f_u_avx(float* outputVector, c
     adj = _mm256_and_ps(adj, is_smaller);
     adj = _mm256_or_ps(_mm256_and_ps(_mm256_set1_ps(-1.0f), is_bigger), adj);
     // scale by distance, sign
-    excess = _mm256_mul_ps(_mm_mul256_ps(excess, adj), distance);
+    excess = _mm256_mul_ps(_mm256_mul_ps(excess, adj), distance);
     output = _mm256_add_ps(input, excess);
     _mm256_storeu_ps(outPtr, output);
+    inPtr += 8;
+    outPtr += 8;
+  }
+
+  for(size_t counter = eight_points * 8; counter < num_points; counter++){
+    float val = inputVector[counter];
+    if(val < lower_bound){
+      float excess = lower_bound - val;
+      signed int count = (int)(excess/dist);
+      outputVector[counter] = val + (count+1)*dist;
+    }
+    else if(val > upper_bound){
+      float excess = val - upper_bound;
+      signed int count = (int)(excess/dist);
+      outputVector[counter] = val - (count+1)*dist;
+    }
+    else
+      outputVector[counter] = val;
+  }
+}
+static inline void volk_32f_s32f_s32f_mod_range_32f_a_avx(float* outputVector, const float* inputVector, const float lower_bound, const float upper_bound, unsigned int num_points){
+  __m256 lower = _mm256_set1_ps(lower_bound);
+  __m256 upper = _mm256_set1_ps(upper_bound);
+  __m256 distance = _mm256_sub_ps(upper,lower);
+  float dist = upper_bound - lower_bound;
+  __m256 input, output;
+  __m256 is_smaller, is_bigger;
+  __m256 excess, adj;
+
+  const float *inPtr = inputVector;
+  float *outPtr = outputVector;
+  size_t eight_points = num_points / 8;
+  for(size_t counter = 0; counter < eight_points; counter++) {
+    input = _mm256_load_ps(inPtr);
+    // calculate mask: input < lower, input > upper
+    is_smaller = _mm256_cmp_ps(input, lower, 0x11); //0x11: Less than, ordered, non-signalling
+    is_bigger = _mm256_cmp_ps(input, upper, 0x1e); //0x1e: greater than, ordered, non-signalling
+    // find out how far we are out-of-bound – positive values!
+    excess = _mm256_and_ps(_mm256_sub_ps(lower, input), is_smaller);
+    excess = _mm256_or_ps(_mm256_and_ps(_mm256_sub_ps(input, upper), is_bigger), excess);
+    // how many do we have to add? (int(excess/distance+1)*distance)
+    excess = _mm256_div_ps(excess, distance);
+    // round down
+    excess = _mm256_cvtepi32_ps(_mm256_cvttps_epi32(excess));
+    // plus 1
+    adj = _mm256_set1_ps(1.0f);
+    excess = _mm256_add_ps(excess, adj);
+    // get the sign right, adj is still {1.0f,1.0f,1.0f,1.0f}
+    adj = _mm256_and_ps(adj, is_smaller);
+    adj = _mm256_or_ps(_mm256_and_ps(_mm256_set1_ps(-1.0f), is_bigger), adj);
+    // scale by distance, sign
+    excess = _mm256_mul_ps(_mm256_mul_ps(excess, adj), distance);
+    output = _mm256_add_ps(input, excess);
+    _mm256_store_ps(outPtr, output);
     inPtr += 8;
     outPtr += 8;
   }
