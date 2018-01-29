@@ -156,9 +156,10 @@ calculate_max_stage_depth_for_row(const int frame_exp, const int row)
 
 static inline void
 volk_32f_8u_polarbutterfly_32f_generic(float* llrs, unsigned char* u,
-    const int frame_size, const int frame_exp,
+    const int __frame_size, const int frame_exp,
     const int stage, const int u_num, const int row)
 {
+  const int frame_size = (1<<frame_exp);
   const int next_stage = stage + 1;
 
   const int half_stage_size = 0x01 << stage;
