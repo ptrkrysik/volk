@@ -213,10 +213,10 @@ volk_32f_8u_polarbutterfly_32f_generic(float* llrs, unsigned char* u,
 
 static inline void
 volk_32f_8u_polarbutterfly_32f_u_avx(float* llrs, unsigned char* u,
-    const int frame_size, const int frame_exp,
+    const int __frame_size, const int frame_exp,
     const int stage, const int u_num, const int row)
 {
-  const int frame_size = 1<<frame_exp;
+  int frame_size = 1<<frame_exp;
   if(row % 2){ // for odd rows just do the only necessary calculation and return.
     const float* next_llrs = llrs + frame_size + row;
     *(llrs + row) = llr_even(*(next_llrs - 1), *next_llrs, u[u_num - 1]);
