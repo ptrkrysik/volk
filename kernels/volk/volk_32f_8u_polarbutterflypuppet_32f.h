@@ -39,7 +39,7 @@ sanitize_bytes(unsigned char* u, const int elements)
   int i;
   unsigned char* u_ptr = u;
   for(i = 0; i < elements; i++){
-    *u_ptr = (*u_ptr & 0x01);
+    *u_ptr = (*u_ptr)?  0x01:0x00;
     u_ptr++;
   }
 }
